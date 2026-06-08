@@ -1,0 +1,160 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+@import "tailwindcss";
+
+:root {
+  --background: #0A0A0A;
+  --foreground: #FFFFFF;
+  --brand-black: #0A0A0A;
+  --brand-charcoal: #121212;
+  --brand-gold: #F5B041;
+  --brand-orange: #FF6B00;
+  
+  --font-sans: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-brand-black: var(--brand-black);
+  --color-brand-charcoal: var(--brand-charcoal);
+  --color-brand-gold: var(--brand-gold);
+  --color-brand-orange: var(--brand-orange);
+  --font-sans: var(--font-sans);
+}
+
+/* Base Styles */
+html,
+body {
+  background-color: var(--brand-black);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--brand-black);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--brand-charcoal);
+  border: 2px solid var(--brand-black);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--brand-gold);
+}
+
+/* Premium Glassmorphism */
+.glass-panel {
+  background: rgba(18, 18, 18, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(245, 176, 65, 0.15);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+}
+
+.glass-panel-orange {
+  background: rgba(18, 18, 18, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 107, 0, 0.2);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+}
+
+.glass-panel-hover {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-panel-hover:hover {
+  border-color: rgba(255, 107, 0, 0.4);
+  box-shadow: 0 0 25px rgba(255, 107, 0, 0.15), inset 0 0 10px rgba(245, 176, 65, 0.05);
+  transform: translateY(-4px);
+}
+
+/* LED Lighting & Glow Effects */
+.led-glow-gold {
+  box-shadow: 0 0 20px rgba(245, 176, 65, 0.2);
+}
+
+.led-glow-orange {
+  box-shadow: 0 0 25px rgba(255, 107, 0, 0.35);
+}
+
+.text-glow-gold {
+  text-shadow: 0 0 10px rgba(245, 176, 65, 0.6);
+}
+
+.text-glow-orange {
+  text-shadow: 0 0 12px rgba(255, 107, 0, 0.75);
+}
+
+/* Subtle Wooden/Brushed Metal Texture */
+.brushed-metal {
+  background: linear-gradient(
+    135deg,
+    rgba(18, 18, 18, 1) 0%,
+    rgba(10, 10, 10, 1) 100%
+  );
+  position: relative;
+}
+
+.brushed-metal::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0.03;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 0);
+  background-size: 4px 4px;
+}
+
+/* Wood Textured Details */
+.wood-texture {
+  background: linear-gradient(
+    to bottom,
+    rgba(139, 90, 43, 0.15) 0%,
+    rgba(90, 50, 20, 0.1) 100%
+  ), rgba(18, 18, 18, 0.95);
+  position: relative;
+  border-bottom: 2px solid rgba(245, 176, 65, 0.2);
+}
+
+.wood-texture::after {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.01) 0px,
+    rgba(255, 255, 255, 0.01) 2px,
+    transparent 2px,
+    transparent 10px
+  );
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* LED strip lights effect */
+.led-strip-gold {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(245, 176, 65, 0.8), transparent);
+  box-shadow: 0 0 10px rgba(245, 176, 65, 0.8);
+}
+
+.led-strip-orange {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(255, 107, 0, 0.8), transparent);
+  box-shadow: 0 0 10px rgba(255, 107, 0, 0.8);
+}
+
+/* Page transitions wrapper */
+.page-transition-container {
+  min-height: calc(100vh - 80px);
+}
