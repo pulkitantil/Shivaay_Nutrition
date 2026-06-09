@@ -34,7 +34,7 @@ const OrderSchema = new mongoose.Schema({
   },
   paymentMethod: {
     type: String,
-    default: 'UPI / COD'
+    default: 'Card / UPI'
   },
   createdAt: {
     type: Date,

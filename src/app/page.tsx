@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
 import { 
   ShieldCheck, 
@@ -26,13 +27,12 @@ import {
   User,
   LogOut,
   ShoppingBag,
-  Printer,
-  Compass
+  Printer
 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import BrandsMarquee from '@/components/BrandsMarquee';
 import { OWNER_PHONE, OWNER_WHATSAPP, STORE_ADDRESS, MAPS_URL } from '@/config';
-import { api } from '@/services/api';
+import { api, Order } from '@/services/api';
 
 
 
@@ -73,21 +73,43 @@ function Counter({ value, suffix = '', duration = 1.5 }: { value: number; suffix
 }
 
 export default function Home() {
+  const router = useRouter();
   const {
     user,
     token,
     login,
     register,
-    googleLogin,
     logout,
     products,
     fetchProducts,
     categories,
-    orders,
-    fetchMyOrders,
     createOrder,
     authLoading,
   } = useStore();
+
+  useEffect(() => {
+    if (token && user?.role === 'admin') {
+      router.push('/admin');
+    }
+  }, [token, user, router]);
+
+  const [myOrders, setMyOrders] = useState<Order[]>([]);
+
+  const formatDate = (dateStr: string | Date) => {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return '';
+    const day = String(d.getDate()).padStart(2, '0');
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const month = months[d.getMonth()];
+    const year = d.getFullYear();
+    return `${day} ${month} ${year}`;
+  };
+
+  useEffect(() => {
+    if (token && user?.role === 'customer') {
+      api.orders.getMyOrders().then(setMyOrders).catch(console.error);
+    }
+  }, [token, user]);
 
   const [mounted, setMounted] = useState(false);
 
@@ -143,11 +165,9 @@ export default function Home() {
   // Fetch orders when user logins
   useEffect(() => {
     if (token && user) {
-      fetchMyOrders();
       setOrderName(user.name);
       setOrderPhone(user.phone);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, user]);
 
   if (!mounted) {
@@ -176,9 +196,10 @@ export default function Home() {
   };
 
   // Build WhatsApp payload link
-  const getWhatsAppLink = (product: any, qty = 1, flavor = 'Double Rich Chocolate') => {
+  const getWhatsAppLink = (product: any, qty = 1, flavor = 'Double Rich Chocolate', orderId?: string) => {
     const text = encodeURIComponent(
       `Hello Shivaay Nutrition! I want to order the supplement:\n\n` +
+      (orderId ? `*ORDER ID:* ${orderId}\n` : '') +
       `*Product:* ${product.name}\n` +
       `*Brand:* ${product.brand}\n` +
       `*Flavour:* ${flavor}\n` +
@@ -189,14 +210,59 @@ export default function Home() {
     return `https://wa.me/${OWNER_WHATSAPP}?text=${text}`;
   };
 
+  // Handle Instant Order from Product Card
+  const handleInstantOrder = async (product: any) => {
+    if (!token || !user) {
+      alert('Please login to place an order');
+      document.getElementById('orders')?.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+
+    const amount = product.price;
+    const orderPayload = {
+      userId: user.id || null,
+      customerDetails: { name: user.name, phone: user.phone },
+      products: [
+        {
+          productId: product.id || product._id,
+          name: product.name,
+          price: product.price,
+          quantity: 1,
+          flavor: 'Double Rich Chocolate'
+        }
+      ],
+      amount,
+      deliveryAddress: 'Showroom Pickup',
+      paymentMethod: 'Card / UPI'
+    };
+
+    let result = null;
+    try {
+      result = await createOrder(orderPayload);
+      if (token && user?.role === 'customer') {
+        api.orders.getMyOrders().then(setMyOrders).catch(console.error);
+      }
+    } catch (err) {
+      console.error('Failed to save order to DB:', err);
+    }
+
+    const orderId = result?.id || result?._id || 'Pending';
+    window.open(getWhatsAppLink(product, 1, 'Double Rich Chocolate', orderId), '_blank');
+  };
+
   // Handle Auth Card submit
   const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      let loggedInUser = null;
       if (authTab === 'login') {
-        await login({ email: authEmail, password: authPassword });
+        loggedInUser = await login({ email: authEmail, password: authPassword });
+        if (loggedInUser?.role === 'admin') {
+          router.push('/admin');
+          return;
+        }
       } else {
-        await register({ name: authName, email: authEmail, phone: authPhone, password: authPassword });
+        loggedInUser = await register({ name: authName, email: authEmail, phone: authPhone, password: authPassword });
       }
       // Clear forms
       setAuthPassword('');
@@ -206,22 +272,14 @@ export default function Home() {
     }
   };
 
-  // Trigger Mock Google Login
-  const handleMockGoogleLogin = async () => {
-    try {
-      await googleLogin({
-        name: 'Gym Athlete',
-        email: 'athlete@gmail.com',
-        googleId: 'google-oauth-101',
-      });
-    } catch {
-      alert('Google Auth Mock failed');
-    }
-  };
-
   // Checkout ordering form submit
   const handleCheckoutSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!token || !user) {
+      alert('Please login to place an order');
+      document.getElementById('orders')?.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
     if (!orderName || !orderPhone || !orderProductId) {
       alert('Please fill out Name, Phone, and choose a Supplement.');
       return;
@@ -247,34 +305,38 @@ export default function Home() {
       ],
       amount,
       deliveryAddress: orderNotes || 'Showroom Pickup',
-      paymentMethod: 'COD / WhatsApp Billing'
+      paymentMethod: 'Card / UPI'
     };
 
+    let result = null;
     try {
       // 1. Save order to backend
-      const result = await createOrder(orderPayload);
-      
-      // 2. Build WhatsApp redirect link
-      const text = encodeURIComponent(
-        `Hello Shivaay Nutrition! I'd like to place this order:\n\n` +
-        `*ORDER ID:* ${result.id || result._id || 'Pending'}\n` +
-        `*CUSTOMER:* ${orderName} (${orderPhone})\n\n` +
-        `*ITEMS:* ${selectedProduct.name} (${orderFlavor}) x ${qty}\n` +
-        `*AMOUNT:* ${formatPrice(amount)}\n\n` +
-        `*DELIVERY NOTES:* ${orderNotes || 'Showroom Pickup'}\n\n` +
-        `Please confirm delivery dispatch.`
-      );
-      
-      // Open WhatsApp
-      window.open(`https://wa.me/${OWNER_WHATSAPP}?text=${text}`, '_blank');
-      
-      // Reset order fields
-      setOrderProductId('');
-      setOrderNotes('');
-      alert('Order registered in showroom queue! Opening WhatsApp to coordinate dispatch...');
-    } catch {
-      alert('Order could not be registered.');
+      result = await createOrder(orderPayload);
+      if (token && user?.role === 'customer') {
+        api.orders.getMyOrders().then(setMyOrders).catch(console.error);
+      }
+    } catch (err) {
+      console.error('Failed to save order to DB:', err);
     }
+
+    // 2. Build WhatsApp redirect link
+    const orderId = result?.id || result?._id || 'Pending';
+    const text = encodeURIComponent(
+      `Hello Shivaay Nutrition! I'd like to place this order:\n\n` +
+      `*ORDER ID:* ${orderId}\n` +
+      `*CUSTOMER:* ${orderName} (${orderPhone})\n\n` +
+      `*ITEMS:* ${selectedProduct.name} (${orderFlavor}) x ${qty}\n` +
+      `*AMOUNT:* ${formatPrice(amount)}\n\n` +
+      `*DELIVERY NOTES:* ${orderNotes || 'Showroom Pickup'}\n\n` +
+      `Please confirm delivery dispatch.`
+    );
+    
+    // Open WhatsApp
+    window.open(`https://wa.me/${OWNER_WHATSAPP}?text=${text}`, '_blank');
+    
+    // Reset order fields
+    setOrderProductId('');
+    setOrderNotes('');
   };
 
   // Print Invoice Popup Window
@@ -590,15 +652,13 @@ export default function Home() {
                             >
                               Details
                             </button>
-                            <a
-                              href={getWhatsAppLink(product)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-1 rounded-full bg-gradient-to-r from-brand-orange to-brand-gold text-white px-3.5 py-2 text-[10px] font-bold hover:scale-105 duration-300 shadow led-glow-orange"
+                            <button
+                              onClick={() => handleInstantOrder(product)}
+                              className="flex items-center gap-1 rounded-full bg-gradient-to-r from-brand-orange to-brand-gold text-white px-3.5 py-2 text-[10px] font-bold hover:scale-105 duration-300 shadow led-glow-orange cursor-pointer"
                             >
                               <MessageCircle className="h-3.5 w-3.5" />
                               <span>Order</span>
-                            </a>
+                            </button>
                           </div>
                         )}
                       </div>
@@ -853,17 +913,7 @@ export default function Home() {
                 </button>
               </form>
 
-              {/* Social Login */}
-              <div className="border-t border-brand-gold/10 pt-6 mt-6 text-center space-y-4">
-                <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider block">Or login with</span>
-                <button
-                  onClick={handleMockGoogleLogin}
-                  className="w-full flex items-center justify-center gap-2 rounded-lg bg-brand-charcoal hover:bg-brand-charcoal/80 border border-brand-gold/25 py-2.5 text-[11px] font-bold text-white transition-colors duration-300"
-                >
-                  <Compass className="h-4 w-4 text-brand-gold" />
-                  <span>Mock Google Login</span>
-                </button>
-              </div>
+
             </div>
           ) : (
             /* Logged in User Profile & Order tracking */
@@ -887,64 +937,82 @@ export default function Home() {
                 </button>
               </div>
 
-              {/* Orders Table */}
-              <div className="glass-panel rounded-2xl p-6 border border-brand-gold/15">
-                <h3 className="text-white font-extrabold text-sm uppercase tracking-wider mb-6 flex items-center gap-2">
-                  <ShoppingBag className="h-4 w-4 text-brand-gold" />
-                  <span>Purchase Logs</span>
-                </h3>
+              {/* My Orders Section */}
+              {user?.role === 'customer' && (
+                <div className="space-y-4">
+                  <h3 className="text-white font-extrabold text-sm uppercase tracking-wider flex items-center gap-2">
+                    <ShoppingBag className="h-4 w-4 text-brand-gold" />
+                    <span>My Orders</span>
+                  </h3>
 
-                {orders.length > 0 ? (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-[11px] border-collapse">
-                      <thead>
-                        <tr className="border-b border-brand-gold/10 text-gray-500 font-bold uppercase tracking-wider">
-                          <th className="pb-3">Order ID</th>
-                          <th className="pb-3">Product</th>
-                          <th className="pb-3">Date</th>
-                          <th className="pb-3">Amount</th>
-                          <th className="pb-3">Status</th>
-                          <th className="pb-3 text-right">Invoice</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-brand-gold/5">
-                        {orders.map((order) => (
-                          <tr key={order.id || order._id}>
-                            <td className="py-4 text-white font-bold font-mono text-[10px]">{order.id || order._id}</td>
-                            <td className="py-4 text-gray-400 max-w-[150px] truncate">
-                              {order.products.map((p: any) => p.name).join(', ')}
-                            </td>
-                            <td className="py-4 text-gray-500">{new Date(order.createdAt).toLocaleDateString()}</td>
-                            <td className="py-4 text-white font-extrabold">₹{order.amount.toLocaleString()}</td>
-                            <td className="py-4">
-                              <span className={`px-2 py-0.5 rounded-full text-[9px] font-black border uppercase ${
-                                order.status === 'Delivered' ? 'text-emerald-400 border-emerald-500/20 bg-emerald-500/5' :
-                                order.status === 'Cancelled' ? 'text-rose-400 border-rose-500/20 bg-rose-500/5' :
-                                'text-brand-orange border-brand-orange/20 bg-brand-orange/5'
-                              }`}>
-                                {order.status}
+                  {myOrders.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {myOrders.map((order) => {
+                        const shortId = (order.id || order._id || '').slice(-6);
+                        const status = order.status || 'Pending';
+                        let statusColorClass = 'text-brand-orange border-brand-orange/20 bg-brand-orange/5';
+                        if (status === 'Confirmed') {
+                          statusColorClass = 'text-blue-400 border-blue-500/20 bg-blue-500/5';
+                        } else if (status === 'Processing') {
+                          statusColorClass = 'text-yellow-400 border-yellow-500/20 bg-yellow-500/5';
+                        } else if (status === 'Shipped') {
+                          statusColorClass = 'text-purple-400 border-purple-500/20 bg-purple-500/5';
+                        } else if (status === 'Delivered') {
+                          statusColorClass = 'text-green-400 border-green-500/20 bg-green-500/5';
+                        }
+
+                        return (
+                          <div
+                            key={order.id || order._id}
+                            className="glass-panel rounded-2xl p-4 border border-brand-gold/15 flex flex-col justify-between gap-3"
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] font-mono text-gray-400">
+                                Order ID: <span className="text-white font-bold">#{shortId}</span>
                               </span>
-                            </td>
-                            <td className="py-4 text-right">
-                              <button
-                                onClick={() => handlePrintInvoice(order)}
-                                className="p-1.5 bg-brand-charcoal text-brand-gold border border-brand-gold/15 hover:border-brand-gold rounded-lg duration-300"
-                                title="Print Invoice"
-                              >
-                                <Printer className="h-3.5 w-3.5" />
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <div className="text-center py-6 text-gray-500 text-xs">
-                    You haven't placed any orders yet. Place an order below to verify tracking!
-                  </div>
-                )}
-              </div>
+                              <span className={`px-2 py-0.5 rounded-full text-[9px] font-black border uppercase tracking-wider ${statusColorClass}`}>
+                                {status}
+                              </span>
+                            </div>
+
+                            <div className="space-y-1.5">
+                              {order.products.map((p: any, idx: number) => (
+                                <div key={idx} className="text-xs text-gray-300">
+                                  <span className="text-white font-semibold">{p.name}</span>
+                                  {p.flavor && <span className="text-gray-400 text-[10px]"> ({p.flavor})</span>}
+                                  <span className="text-brand-gold font-bold"> x{p.quantity}</span>
+                                </div>
+                              ))}
+                            </div>
+
+                            <div className="border-t border-brand-gold/10 pt-2 flex items-center justify-between text-[11px]">
+                              <span className="text-gray-500 font-medium">
+                                {order.createdAt ? formatDate(order.createdAt) : ''}
+                              </span>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => handlePrintInvoice(order)}
+                                  className="p-1 bg-brand-charcoal text-brand-gold border border-brand-gold/15 hover:border-brand-gold rounded-lg duration-300"
+                                  title="Print Invoice"
+                                >
+                                  <Printer className="h-3.5 w-3.5" />
+                                </button>
+                                <span className="text-white font-extrabold">
+                                  Total: <span className="text-brand-orange">₹{order.amount.toLocaleString('en-IN')}</span>
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="glass-panel rounded-2xl p-6 border border-brand-gold/15 text-center text-gray-400 text-xs py-8">
+                      No orders yet. Start shopping! 💪
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
@@ -1250,7 +1318,7 @@ export default function Home() {
                 { q: 'How do I check my supplement authenticity code?', a: 'All proteins shipped by Shivaay contain official authorized importer labels (such as Bright Performance, Glanbia, or MuscleHouse). Scratch the sticker card to get your unique code, then text or submit it to the importer portal.' },
                 { q: 'What are delivery shipping speeds?', a: 'Timings depend on destination: we offer same-day dispatch inside Sonipat for orders placed before 5 PM (free shipping above ₹4,000). Delhi/NCR deliveries take 1-2 days, while shipping across India takes 3-5 business days.' },
                 { q: 'Do you match prices with online portals?', a: 'Yes, we price-match with physical authorized showroom retailers. However, since large online marketplaces harbor unverified third-party sellers, we do not price match with them to prevent selling counterfeit formulas.' },
-                { q: 'What payment methods do you support?', a: 'UPI transfers (Google Pay, PhonePe, Paytm), cash at Sonipat checkout, net banking, or Cash on Delivery (COD) are all supported.' }
+                { q: 'What payment methods do you support?', a: 'Only online payments are accepted via card and UPI (Google Pay, PhonePe, Paytm, etc.). For in-hand/cash payments, you can visit our Sonipat showroom.' }
               ].map((faq, idx) => {
                 const isOpen = openFaq === idx;
                 return (

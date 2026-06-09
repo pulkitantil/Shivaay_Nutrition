@@ -477,6 +477,16 @@ module.exports = {
       orders[idx].status = status;
       writeLocal('orders', orders);
       return orders[idx];
+    },
+    findByIdAndDelete: async (id) => {
+      if (dbType === 'mongo') {
+        return await Order.findByIdAndDelete(id);
+      }
+      const orders = readLocal('orders');
+      const filtered = orders.filter(o => o.id !== id && o._id !== id);
+      const isDeleted = filtered.length !== orders.length;
+      writeLocal('orders', filtered);
+      return isDeleted ? { id } : null;
     }
   },
 

@@ -66,7 +66,7 @@ router.post('/', orderValidation, async (req, res) => {
       products,
       amount: parseFloat(amount),
       deliveryAddress: deliveryAddress || '',
-      paymentMethod: paymentMethod || 'UPI / COD',
+      paymentMethod: paymentMethod || 'Card / UPI',
       status: 'Pending'
     });
 
@@ -105,6 +105,12 @@ router.put('/:id/status', [authMiddleware, adminOnly], async (req, res) => {
   }
 
   try {
+    if (status === 'Cancelled') {
+      const deleted = await db.orders.findByIdAndDelete(req.params.id);
+      if (!deleted) return res.status(404).json({ msg: 'Order not found' });
+      return res.json({ msg: 'Order cancelled and removed.' });
+    }
+
     const updated = await db.orders.findByIdAndUpdateStatus(req.params.id, status);
     if (!updated) return res.status(404).json({ msg: 'Order not found' });
     res.json(updated);
