@@ -18,8 +18,8 @@ if (process.env.OPENAI_API_KEY) {
 const STORE_METADATA = {
   name: 'Shivaay Nutrition',
   address: '1st floor, Omaxe plaza, Omaxe City, Sonipat, Haryana 131027',
-  phone: process.env.OWNER_PHONE || '+91 99999 88888',
-  whatsapp: process.env.OWNER_WHATSAPP || '919999988888',
+  phone: process.env.OWNER_PHONE || '+91 8295056962',
+  whatsapp: process.env.OWNER_WHATSAPP || '918295056962',
   timings: 'Monday - Saturday: 10:00 AM - 9:00 PM | Sunday: Closed',
   delivery: 'Free delivery inside Sonipat above ₹4,000. Express shipping across Haryana and India.',
   authenticity: '100% genuine products sourced directly from authorized brand importers. Every tub features scratch-sticker codes for verification.'

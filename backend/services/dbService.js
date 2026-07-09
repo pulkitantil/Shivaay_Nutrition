@@ -244,7 +244,7 @@ const seedLocalDB = async () => {
       id: 'admin-user-id',
       name: 'Shivaay Admin',
       email: 'admin@shivaay.com',
-      phone: process.env.OWNER_PHONE || '9999988888',
+      phone: process.env.OWNER_PHONE || '8295056962',
       password: hashedPassword,
       role: 'admin',
       createdAt: new Date().toISOString()
@@ -258,7 +258,7 @@ const seedLocalDB = async () => {
 const seedMongo = async () => {
   try {
     // Clear duplicate admin user if registered as customer previously
-    await User.deleteOne({ email: "blockbased3@gmail.com" });
+    await User.deleteOne({ email: "shivaaynutrition190@gmail.com" });
 
     const hasOldProducts = await Product.findOne({
       brand: { $in: ['Shivaay Nutrition', 'Creapure', 'Labrada', 'Cellucor'] }
@@ -281,7 +281,7 @@ const seedMongo = async () => {
       const defaultAdmin = new User({
         name: 'Shivaay Admin',
         email: 'admin@shivaay.com',
-        phone: process.env.OWNER_PHONE || '9999988888',
+        phone: process.env.OWNER_PHONE || '8295056962',
         password: hashedPassword,
         role: 'admin'
       });
