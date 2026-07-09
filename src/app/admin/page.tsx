@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { 
   Plus, 
   Edit2, 
@@ -23,6 +24,22 @@ import { useStore } from '@/store/useStore';
 import { api } from '@/services/api';
 
 type AdminTab = 'dashboard' | 'products' | 'orders';
+
+function AdminProductImage({ src, alt }: { src: string; alt: string }) {
+  const [imgSrc, setImgSrc] = useState(src);
+  return (
+    <Image
+      src={imgSrc}
+      alt={alt}
+      width={36}
+      height={36}
+      className="w-9 h-9 object-cover rounded-lg border border-brand-gold/10 shrink-0"
+      onError={() => {
+        setImgSrc('https://images.unsplash.com/photo-1593079831268-3381b0db4a77?q=80&w=600');
+      }}
+    />
+  );
+}
 
 export default function AdminPage() {
   const {
@@ -865,11 +882,9 @@ export default function AdminPage() {
                     {products.map((product) => (
                       <tr key={product.id || product._id} className="hover:bg-brand-charcoal/20 duration-300">
                         <td className="py-4 pl-2 flex items-center gap-3">
-                          <img
+                          <AdminProductImage
                             src={product.image}
-                            alt=""
-                            className="w-9 h-9 object-cover rounded-lg border border-brand-gold/10 shrink-0"
-                            onError={(e) => { e.currentTarget.src = 'https://images.unsplash.com/photo-1593079831268-3381b0db4a77?q=80&w=600'; }}
+                            alt={product.name}
                           />
                           <div className="space-y-0.5 max-w-[150px] sm:max-w-[200px]">
                             <p className="text-white font-bold truncate">{product.name}</p>

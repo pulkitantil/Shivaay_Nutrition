@@ -21,9 +21,6 @@ import {
   Navigation,
   Phone,
   Send,
-  ShieldQuestion,
-  ChevronDown,
-  ChevronUp,
   User,
   LogOut,
   ShoppingBag,
@@ -31,6 +28,8 @@ import {
 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import BrandsMarquee from '@/components/BrandsMarquee';
+import ProductCard from '@/components/ProductCard';
+import FaqSection from '@/components/FaqSection';
 import { OWNER_PHONE, OWNER_WHATSAPP, STORE_ADDRESS, MAPS_URL } from '@/config';
 import { api, Order } from '@/services/api';
 
@@ -142,8 +141,7 @@ export default function Home() {
   const [orderFlavor, setOrderFlavor] = useState('Double Rich Chocolate');
   const [orderNotes, setOrderNotes] = useState('');
 
-  // FAQs Accordion State
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
+
 
   // Initial Fetches
   useEffect(() => {
@@ -586,84 +584,16 @@ export default function Home() {
                 className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
               >
                 {filteredProducts.map((product) => (
-                  <motion.div
-                    layout
+                  <ProductCard
                     key={product.id || product._id}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    className="rounded-2xl glass-panel glass-panel-hover flex flex-col h-full overflow-hidden group border border-brand-gold/15"
-                  >
-                    {/* Img Box */}
-                    <div className="relative aspect-square w-full bg-brand-black overflow-hidden border-b border-brand-gold/10">
-                      <img
-                        src={product.image}
-                        alt={product.name}
-                        className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
-                        onError={(e) => {
-                          e.currentTarget.src = 'https://images.unsplash.com/photo-1593079831268-3381b0db4a77?q=80&w=600';
-                        }}
-                      />
-                      <div className="absolute top-3 right-3">
-                        <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-black border uppercase ${
-                          product.status === 'In Stock' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' :
-                          product.status === 'Limited Stock' ? 'bg-amber-500/10 text-amber-400 border-amber-500/30' :
-                          'bg-rose-500/10 text-rose-400 border-rose-500/30'
-                        }`}>
-                          {product.status}
-                        </span>
-                      </div>
-                      <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-md rounded px-2.5 py-0.5 border border-brand-gold/10">
-                        <span className="text-[9px] font-extrabold tracking-wider text-brand-gold uppercase">{product.brand}</span>
-                      </div>
-                    </div>
-
-                    {/* Details Box */}
-                    <div className="p-5 flex flex-col flex-grow">
-                      <div className="flex-grow space-y-2">
-                        <h3 className="text-white font-extrabold text-sm leading-snug group-hover:text-brand-gold transition-colors duration-300">
-                          {product.name}
-                        </h3>
-                        <p className="text-gray-400 text-[11px] line-clamp-2 leading-relaxed">
-                          {product.description}
-                        </p>
-                      </div>
-
-                      <div className="h-[1px] bg-brand-gold/10 w-full my-4" />
-
-                      <div className="flex items-center justify-between mt-auto gap-4">
-                        <div className="flex flex-col">
-                          <span className="text-[9px] text-gray-500 font-bold uppercase">Price</span>
-                          <span className="text-white font-extrabold text-base">{formatPrice(product.price)}</span>
-                        </div>
-
-                        {product.status === 'Out of Stock' ? (
-                          <button disabled className="rounded-full bg-brand-charcoal text-gray-500 border border-brand-charcoal px-3 py-2 text-[10px] font-bold cursor-not-allowed">
-                            Sold Out
-                          </button>
-                        ) : (
-                          <div className="flex gap-1.5">
-                            <button
-                              onClick={() => {
-                                setOrderProductId(product.id || product._id);
-                                window.location.hash = 'contact';
-                              }}
-                              className="rounded-full bg-brand-charcoal hover:bg-brand-charcoal/80 border border-brand-gold/20 text-brand-gold px-3.5 py-2 text-[10px] font-bold transition-all duration-300"
-                            >
-                              Details
-                            </button>
-                            <button
-                              onClick={() => handleInstantOrder(product)}
-                              className="flex items-center gap-1 rounded-full bg-gradient-to-r from-brand-orange to-brand-gold text-white px-3.5 py-2 text-[10px] font-bold hover:scale-105 duration-300 shadow led-glow-orange cursor-pointer"
-                            >
-                              <MessageCircle className="h-3.5 w-3.5" />
-                              <span>Order</span>
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </motion.div>
+                    product={product}
+                    formatPrice={formatPrice}
+                    onInstantOrder={handleInstantOrder}
+                    onDetailsClick={(id) => {
+                      setOrderProductId(id);
+                      window.location.hash = 'contact';
+                    }}
+                  />
                 ))}
               </motion.div>
             ) : (
@@ -1304,51 +1234,7 @@ export default function Home() {
           </div>
 
           {/* FAQs Acc Drawer */}
-          <div className="max-w-3xl mx-auto mt-20 border-t border-brand-charcoal/50 pt-16">
-            <div className="text-center space-y-3 mb-10">
-              <h3 className="text-xl font-black uppercase text-white flex items-center justify-center gap-2">
-                <ShieldQuestion className="h-5 w-5 text-brand-gold" />
-                <span>Frequently Asked Questions</span>
-              </h3>
-              <p className="text-[10px] text-gray-500">Authenticity verification and delivery guidelines</p>
-            </div>
-
-            <div className="space-y-4">
-              {[
-                { q: 'How do I check my supplement authenticity code?', a: 'All proteins shipped by Shivaay contain official authorized importer labels (such as Bright Performance, Glanbia, or MuscleHouse). Scratch the sticker card to get your unique code, then text or submit it to the importer portal.' },
-                { q: 'What are delivery shipping speeds?', a: 'Timings depend on destination: we offer same-day dispatch inside Sonipat for orders placed before 5 PM (free shipping above ₹4,000). Delhi/NCR deliveries take 1-2 days, while shipping across India takes 3-5 business days.' },
-                { q: 'Do you match prices with online portals?', a: 'Yes, we price-match with physical authorized showroom retailers. However, since large online marketplaces harbor unverified third-party sellers, we do not price match with them to prevent selling counterfeit formulas.' },
-                { q: 'What payment methods do you support?', a: 'Only online payments are accepted via card and UPI (Google Pay, PhonePe, Paytm, etc.). For in-hand/cash payments, you can visit our Sonipat showroom.' }
-              ].map((faq, idx) => {
-                const isOpen = openFaq === idx;
-                return (
-                  <div key={idx} className="glass-panel rounded-xl overflow-hidden border border-brand-gold/5">
-                    <button
-                      onClick={() => setOpenFaq(isOpen ? null : idx)}
-                      className="w-full flex justify-between items-center p-4 text-left text-xs sm:text-sm font-bold text-white hover:text-brand-gold duration-300"
-                    >
-                      <span>{faq.q}</span>
-                      {isOpen ? <ChevronUp className="h-4 w-4 text-brand-gold" /> : <ChevronDown className="h-4 w-4 text-gray-500" />}
-                    </button>
-                    <AnimatePresence>
-                      {isOpen && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          className="overflow-hidden bg-brand-charcoal/20 border-t border-brand-gold/5"
-                        >
-                          <p className="p-4 text-[11px] text-gray-400 leading-relaxed">
-                            {faq.a}
-                          </p>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+          <FaqSection />
 
         </div>
       </section>

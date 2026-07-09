@@ -1,79 +1,6 @@
-# 🏋️ Shivaay Nutrition
+# 🏋️ Shivaay Nutrition - Premium supplement store
 
-A premium 3D supplement store website built with Next.js, TypeScript, Tailwind CSS, Framer Motion, Three.js, and AI-powered customer assistance.
-
-The platform is designed for modern supplement stores to showcase products, manage orders, interact with customers through an AI assistant, and provide a luxury showroom experience.
-
----
-
-## ✨ Features
-
-### 🎨 Premium 3D UI
-- Modern fitness-themed design
-- Smooth animations using Framer Motion
-- Three.js interactive elements
-- Premium black, gold, and orange color palette
-
-### 🛍 Product Management
-- Browse supplement products
-- Product categories
-- Product search and filtering
-- Featured brands section
-
-### 🤖 AI Fitness Assistant
-- AI-powered customer support
-- Product recommendations
-- Supplement guidance
-- Order status assistance
-- Voice input support
-- Text-to-speech responses
-
-### 👤 Authentication
-- User Registration
-- User Login
-- Google Authentication
-- Protected User Dashboard
-
-### 📦 Order Management
-- Place Orders
-- Track Orders
-- Order History
-- Customer Purchase Records
-
-### 📍 Store Information
-- Google Maps Integration
-- Store Location Page
-- Contact Information
-- WhatsApp Integration
-
-### 📱 Fully Responsive
-- Mobile Friendly
-- Tablet Friendly
-- Desktop Optimized
-
----
-
-## 🛠 Tech Stack
-
-### Frontend
-- Next.js 16
-- React 19
-- TypeScript
-- Tailwind CSS
-- Framer Motion
-- Three.js
-- React Three Fiber
-- Zustand
-
-### Backend
-- Node.js
-- Express.js
-- REST APIs
-
-### Additional Libraries
-- GSAP
-- Lucide React Icons
-- React Three Drei
+Shivaay Nutrition is a premium 3D supplement storefront and administrative dashboard application built with **Next.js 16 (App Router)**, **TypeScript**, **Framer Motion**, and **Express.js**.
 
 ---
 
@@ -82,212 +9,109 @@ The platform is designed for modern supplement stores to showcase products, mana
 ```bash
 Shivaay/
 │
-├── backend/
-│   ├── controllers/
-│   ├── routes/
-│   ├── models/
-│   ├── middleware/
-│   └── server.js
+├── backend/                  # Express.js REST API Server
+│   ├── data/                 # JSON file fallback database store
+│   ├── middleware/           # Auth validation, rate limiters
+│   ├── models/               # MongoDB Mongoose schemas (User, Product, Order, Otp)
+│   ├── routes/               # API endpoints (Auth, Admin, Products, Orders, AI, Stats)
+│   ├── services/             # Database routing, email services
+│   ├── server.js             # Main backend API entrypoint
+│   └── package.json
 │
-├── public/
+├── public/                   # Static storefront media & images
 │
-├── src/
-│   ├── app/
-│   │   ├── products/
-│   │   ├── contact/
-│   │   ├── location/
-│   │   ├── offers/
-│   │   └── admin/
-│   │
-│   ├── components/
-│   │   ├── AiAssistant.tsx
-│   │   ├── Navbar.tsx
-│   │   ├── Footer.tsx
-│   │   ├── ThreeScene.tsx
-│   │   └── FloatingCTA.tsx
-│   │
-│   ├── services/
-│   ├── store/
-│   └── config.ts
+├── src/                      # Next.js Frontend App
+│   ├── app/                  # App Router pages (storefront, admin dashboard, loading/errors)
+│   ├── components/           # Reusable UI (ProductCard, FaqSection, AiAssistant, Navbar)
+│   ├── config.ts             # Store metadata and URL parameters
+│   ├── services/             # API connection and fetching client wrappers
+│   └── store/                # Global Zustand stores (Auth tokens)
 │
-└── package.json
+├── package.json              # Root dependencies and script commands
+└── README.md
 ```
 
 ---
 
-## ⚙️ Environment Variables
+## ⚙️ Environment Variables Config Checklist
 
-Create a `.env.local` file in the root directory.
+### Frontend Environment (`.env.local`)
+Create a `.env.local` file in the project root:
 
 ```env
-NEXT_PUBLIC_OWNER_PHONE=+91XXXXXXXXXX
-NEXT_PUBLIC_OWNER_WHATSAPP=91XXXXXXXXXX
+NEXT_PUBLIC_OWNER_PHONE=+919999988888
+NEXT_PUBLIC_OWNER_WHATSAPP=919999988888
 NEXT_PUBLIC_OWNER_EMAIL=contact@shivaaynutrition.com
 
-NEXT_PUBLIC_STORE_ADDRESS=Your Store Address
+NEXT_PUBLIC_STORE_ADDRESS=1st floor, Omaxe plaza, Omaxe City, Sonipat, Haryana 131027
 
-NEXT_PUBLIC_MAPS_URL=https://maps.google.com/...
+NEXT_PUBLIC_MAPS_URL=https://maps.app.goo.gl/xxx
 NEXT_PUBLIC_API_URL=http://localhost:5001
 ```
 
-Backend environment variables:
+### Backend Environment (`backend/.env`)
+Create a `.env` file in the `backend/` directory:
 
 ```env
 PORT=5001
 
-JWT_SECRET=your_secret_key
+# JWT Secret - Strictly required in production
+JWT_SECRET=your_production_secure_jwt_secret_key_here
 
-MONGODB_URI=your_mongodb_connection_string
+# MongoDB Connection String (leave blank to fall back to JSON file storage in backend/data/)
+MONGODB_URI=mongodb+srv://...
 
+# Google OAuth Keys
 GOOGLE_CLIENT_ID=your_google_client_id
 GOOGLE_CLIENT_SECRET=your_google_client_secret
 
-OPENAI_API_KEY=your_ai_api_key
+# AI Models (Optional - chatbot will use local matching fallback engine if keys are omitted)
+GEMINI_API_KEY=your_gemini_api_key
+OPENAI_API_KEY=your_openai_api_key
+
+# Email Server Settings (SMTP - for Admin OTP delivery)
+EMAIL_SERVICE=gmail
+EMAIL_USER=your_email@gmail.com
+EMAIL_PASS=your_app_specific_password
+ADMIN_EMAIL=shivaaynutrition190@gmail.com
 ```
 
 ---
 
-## 🚀 Installation
+## 🚀 Local Installation & Setup
 
-### Clone Repository
-
+### 1. Clone & Set Up Directory
 ```bash
-git clone https://github.com/yourusername/shivaay-nutrition.git
+git clone <repository-url>
+cd Shivaay
 ```
 
-### Install Frontend Dependencies
-
-```bash
-npm install
-```
-
-### Install Backend Dependencies
-
-```bash
-cd backend
-
-npm install
-```
-
----
-
-## ▶ Running The Project
-
-### Start Backend
-
+### 2. Install & Start Backend Service
 ```bash
 cd backend
-
+npm install
 npm run dev
 ```
+*The backend API will run on `http://localhost:5001`.*
 
-Backend:
-
+### 3. Install & Start Frontend Showcase
+Open a new terminal window at the root folder:
 ```bash
-http://localhost:5001
-```
-
-### Start Frontend
-
-```bash
+npm install
 npm run dev
 ```
-
-Frontend:
-
-```bash
-http://localhost:3000
-```
+*The storefront UI will launch on `http://localhost:3000`.*
 
 ---
 
-## 🏪 Pages
+## 🛡️ Production Security Checklist
 
-### Home
-- Hero Section
-- Product Highlights
-- Customer Statistics
-- Brand Showcase
-- AI Assistant
-
-### Products
-- Product Listings
-- Search
-- Category Filters
-
-### Offers
-- Current Deals
-- Promotions
-
-### Contact
-- Contact Form
-- WhatsApp Integration
-
-### Location
-- Store Directions
-- Google Maps
-
-### Admin
-- Product Management
-- Order Monitoring
-
----
-
-## 🤖 AI Assistant Capabilities
-
-The built-in AI Assistant can:
-
-- Recommend supplements
-- Answer fitness-related queries
-- Explain protein and creatine usage
-- Check order status
-- Provide store timings
-- Assist customers through voice and text interactions
-
----
-
-## 📸 Business Use Cases
-
-Perfect for:
-
-- Supplement Stores
-- Nutrition Shops
-- Fitness Brands
-- Gym Merchandise Stores
-- Health & Wellness Businesses
-
----
-
-## 🔒 Security Features
-
-- JWT Authentication
-- Protected Routes
-- Secure API Communication
-- Environment Variable Protection
-
----
-
-## 📈 Future Enhancements
-
-- Online Payments
-- Inventory Management
-- Loyalty Rewards Program
-- Personalized AI Recommendations
-- Multi-store Support
-- Mobile Application
-
----
-
-## 👨‍💻 Developed By
-
-**Pulkit Antil**
-
-Premium AI, Web3, Blockchain, and Modern Web Solutions.
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License.
-
-© 2026 Shivaay Nutrition. All Rights Reserved.
+- [x] **Strict JWT Secret Enforcement:** Server will refuse to boot up and exit with code `1` if `JWT_SECRET` is missing.
+- [x] **Secure JWT Verification:** Enforced signature verification with `HS256` explicitly to block algorithm confusion attacks.
+- [x] **Server-Side Pricing Checks:** The order amount is computed directly from verified database records. Client-provided prices and totals are completely ignored.
+- [x] **Quantity Boundary Limits:** Orders must pass strict range checks (only positive integers greater than 0 and less than or equal to 100 items).
+- [x] **Direct Object Reference (IDOR) Shield:** Enforced user profile ownership matching on order submissions.
+- [x] **Mass Assignment Defense:** Update queries use strict allow-lists of editable fields.
+- [x] **API Rate Limiting:** Configured rate limits protecting auth, admin, orders, AI chat, and OTP routes.
+- [x] **HTTP Secure Headers:** Implemented Express `helmet` configuration.
+- [x] **Atomic Transactions:** Stock decrement operations use MongoDB atomic queries to prevent race conditions during concurrent checkouts.

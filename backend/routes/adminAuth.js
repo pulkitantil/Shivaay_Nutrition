@@ -5,9 +5,11 @@ const jwt = require('jsonwebtoken');
 const db = require('../services/dbService');
 const { sendOTPEmail } = require('../services/emailService');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'shivaay_secret_key';
+const { otpLimiter } = require('../middleware/rateLimiters');
+
+const JWT_SECRET = process.env.JWT_SECRET;
 const getAdminEmails = () => {
-  const envEmail = process.env.ADMIN_EMAIL || 'blockbased3@gmail.com,blockbased@gmail.com';
+  const envEmail = process.env.ADMIN_EMAIL || 'shivaaynutrition190@gmail.com';
   return envEmail.split(',').map(e => e.toLowerCase().trim());
 };
 
@@ -83,7 +85,7 @@ router.post('/check-email', async (req, res) => {
       user = await db.users.create({
         name: 'Shivaay Admin',
         email: normalizedEmail,
-        phone: process.env.OWNER_PHONE || '9999988888',
+        phone: process.env.OWNER_PHONE || '8295056962',
         role: 'admin'
       });
     }
@@ -127,13 +129,13 @@ router.post('/check-email', async (req, res) => {
 
   } catch (err) {
     console.error('Check email error:', err);
-    res.status(500).send('Server Error');
+    res.status(500).json({ msg: 'Server Error' });
   }
 });
 
 // @route   POST api/admin/send-otp
 // @desc    Validate admin email & send 6-digit OTP
-router.post('/send-otp', async (req, res) => {
+router.post('/send-otp', otpLimiter, async (req, res) => {
   const { email } = req.body;
 
   if (!email) {
@@ -168,7 +170,7 @@ router.post('/send-otp', async (req, res) => {
       user = await db.users.create({
         name: 'Shivaay Admin',
         email: normalizedEmail,
-        phone: process.env.OWNER_PHONE || '9999988888',
+        phone: process.env.OWNER_PHONE || '8295056962',
         role: 'admin'
       });
     }
@@ -200,7 +202,7 @@ router.post('/send-otp', async (req, res) => {
 
   } catch (err) {
     console.error('Send OTP error:', err);
-    res.status(500).send('Server Error');
+    res.status(500).json({ msg: 'Server Error' });
   }
 });
 
@@ -292,7 +294,7 @@ router.post('/verify-otp', async (req, res) => {
 
   } catch (err) {
     console.error('Verify OTP error:', err);
-    res.status(500).send('Server Error');
+    res.status(500).json({ msg: 'Server Error' });
   }
 });
 
@@ -340,7 +342,7 @@ router.post('/set-password', async (req, res) => {
 
     // 3. Generate JWT and authenticate
     const payload = { id: user.id, role: user.role };
-    jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' }, (err, token) => {
+    jwt.sign(payload, JWT_SECRET, { expiresIn: '7d', algorithm: 'HS256' }, (err, token) => {
       if (err) throw err;
       res.json({
         token,
@@ -356,7 +358,7 @@ router.post('/set-password', async (req, res) => {
 
   } catch (err) {
     console.error('Set password error:', err);
-    res.status(500).send('Server Error');
+    res.status(500).json({ msg: 'Server Error' });
   }
 });
 
@@ -394,7 +396,7 @@ router.post('/login', async (req, res) => {
 
     // 2. Generate JWT and authenticate
     const payload = { id: user.id, role: user.role };
-    jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' }, (err, token) => {
+    jwt.sign(payload, JWT_SECRET, { expiresIn: '7d', algorithm: 'HS256' }, (err, token) => {
       if (err) throw err;
       res.json({
         token,
@@ -410,7 +412,7 @@ router.post('/login', async (req, res) => {
 
   } catch (err) {
     console.error('Admin password login error:', err);
-    res.status(500).send('Server Error');
+    res.status(500).json({ msg: 'Server Error' });
   }
 });
 

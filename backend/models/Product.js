@@ -48,4 +48,8 @@ const ProductSchema = new mongoose.Schema({
   }
 });
 
+ProductSchema.index({ category: 1 });
+ProductSchema.index({ brand: 1 });
+ProductSchema.index({ createdAt: -1 });
+
 module.exports = mongoose.model('Product', ProductSchema);

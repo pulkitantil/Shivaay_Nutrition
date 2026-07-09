@@ -232,7 +232,7 @@ const seedLocalDB = async () => {
 
   // Seed Users (Default Admin)
   let users = readLocal('users');
-  const filteredUsers = users.filter(u => u.email !== 'blockbased3@gmail.com' || u.role === 'admin');
+  const filteredUsers = users.filter(u => u.email !== 'shivaaynutrition190@gmail.com' || u.role === 'admin');
   if (filteredUsers.length !== users.length) {
     writeLocal('users', filteredUsers);
     users = filteredUsers;
@@ -366,7 +366,7 @@ module.exports = {
     },
     findByIdAndUpdate: async (id, updateData) => {
       if (dbType === 'mongo') {
-        return await User.findByIdAndUpdate(id, updateData, { new: true });
+        return await User.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
       }
       const users = readLocal('users');
       const idx = users.findIndex(u => u.id === id);
@@ -409,7 +409,7 @@ module.exports = {
     },
     findByIdAndUpdate: async (id, updateData) => {
       if (dbType === 'mongo') {
-        return await Product.findByIdAndUpdate(id, updateData, { new: true });
+        return await Product.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
       }
       const products = readLocal('products');
       const idx = products.findIndex(p => p.id === id);
@@ -427,6 +427,46 @@ module.exports = {
       const isDeleted = filtered.length !== products.length;
       writeLocal('products', filtered);
       return isDeleted ? { id } : null;
+    },
+    deductStock: async (id, quantity) => {
+      if (dbType === 'mongo') {
+        const updated = await Product.findOneAndUpdate(
+          { _id: id, stock: { $gte: quantity } },
+          { $inc: { stock: -quantity } },
+          { new: true, runValidators: true }
+        );
+        if (!updated) {
+          throw new Error('Product not found or insufficient stock');
+        }
+        let newStatus = updated.status;
+        if (updated.stock === 0) {
+          newStatus = 'Out of Stock';
+        } else if (updated.stock <= 3) {
+          newStatus = 'Limited Stock';
+        } else {
+          newStatus = 'In Stock';
+        }
+        if (updated.status !== newStatus) {
+          updated.status = newStatus;
+          await updated.save();
+        }
+        return updated;
+      } else {
+        const products = readLocal('products');
+        const idx = products.findIndex(p => p.id === id);
+        if (idx === -1) throw new Error('Product not found');
+        if (products[idx].stock < quantity) throw new Error('Insufficient stock');
+        products[idx].stock -= quantity;
+        if (products[idx].stock === 0) {
+          products[idx].status = 'Out of Stock';
+        } else if (products[idx].stock <= 3) {
+          products[idx].status = 'Limited Stock';
+        } else {
+          products[idx].status = 'In Stock';
+        }
+        writeLocal('products', products);
+        return products[idx];
+      }
     }
   },
 
@@ -469,7 +509,7 @@ module.exports = {
     },
     findByIdAndUpdateStatus: async (id, status) => {
       if (dbType === 'mongo') {
-        return await Order.findByIdAndUpdate(id, { status }, { new: true });
+        return await Order.findByIdAndUpdate(id, { status }, { new: true, runValidators: true });
       }
       const orders = readLocal('orders');
       const idx = orders.findIndex(o => o.id === id);

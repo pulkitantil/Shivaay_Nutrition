@@ -1,11 +1,22 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const compression = require('compression');
 const { initDB, getDbType } = require('./services/dbService');
 
-const rateLimit = require('express-rate-limit');
+// Verify critical environment variables
+if (!process.env.JWT_SECRET) {
+  console.error('FATAL ERROR: JWT_SECRET is not defined in the environment variables.');
+  process.exit(1);
+}
 
 const app = express();
+
+// Apply secure headers and response compression
+app.use(helmet());
+app.use(compression());
+
 const PORT = process.env.PORT || 5000;
 
 // Enable CORS for specific frontend URL
@@ -17,17 +28,12 @@ app.use(cors({
 }));
 
 // Rate Limiters
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 20, // limit each IP to 20 requests per windowMs
-  message: { msg: 'Too many authentication attempts. Please try again after 15 minutes.' }
-});
-
-const adminLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // limit each IP to 10 requests per windowMs
-  message: { msg: 'Too many admin portal requests. Please try again after 15 minutes.' }
-});
+const {
+  authLimiter,
+  adminLimiter,
+  aiLimiter,
+  orderLimiter
+} = require('./middleware/rateLimiters');
 
 // Express Middleware
 app.use(express.json());
@@ -49,9 +55,9 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authLimiter, require('./routes/auth'));
 app.use('/api/admin', adminLimiter, require('./routes/adminAuth'));
 app.use('/api/products', require('./routes/products'));
-app.use('/api/orders', require('./routes/orders'));
+app.use('/api/orders', orderLimiter, require('./routes/orders'));
 app.use('/api/stats', require('./routes/stats'));
-app.use('/api/ai', require('./routes/ai'));
+app.use('/api/ai', aiLimiter, require('./routes/ai'));
 
 // Global Error Handler
 app.use((err, req, res, next) => {

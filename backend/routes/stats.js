@@ -32,7 +32,7 @@ router.get('/public', async (req, res) => {
     });
   } catch (err) {
     console.error('Fetch public stats error:', err);
-    res.status(500).send('Server Error');
+    res.status(500).json({ msg: 'Server Error' });
   }
 });
 

@@ -6,9 +6,9 @@ const jwt = require('jsonwebtoken');
 const db = require('../services/dbService');
 const { authMiddleware } = require('../middleware/auth');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'shivaay_secret_key';
+const JWT_SECRET = process.env.JWT_SECRET;
 const getAdminEmails = () => {
-  const envEmail = process.env.ADMIN_EMAIL || 'blockbased3@gmail.com,blockbased@gmail.com';
+  const envEmail = process.env.ADMIN_EMAIL || 'shivaaynutrition190@gmail.com';
   return envEmail.split(',').map(e => e.toLowerCase().trim());
 };
 
@@ -68,7 +68,7 @@ router.post('/register', registerValidation, async (req, res) => {
 
     // Create JWT
     const payload = { id: newUser.id, role: newUser.role };
-    jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' }, (err, token) => {
+    jwt.sign(payload, JWT_SECRET, { expiresIn: '7d', algorithm: 'HS256' }, (err, token) => {
       if (err) throw err;
       res.json({
         token,
@@ -87,7 +87,7 @@ router.post('/register', registerValidation, async (req, res) => {
     if (err.code === 11000) {
       return res.status(400).json({ msg: 'Email already registered. Please login.' });
     }
-    res.status(500).send('Server Error');
+    res.status(500).json({ msg: 'Server Error' });
   }
 });
 
@@ -120,7 +120,7 @@ router.post('/login', async (req, res) => {
 
     // Create JWT
     const payload = { id: user.id, role: user.role };
-    jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' }, (err, token) => {
+    jwt.sign(payload, JWT_SECRET, { expiresIn: '7d', algorithm: 'HS256' }, (err, token) => {
       if (err) throw err;
       res.json({
         token,
@@ -136,7 +136,7 @@ router.post('/login', async (req, res) => {
 
   } catch (err) {
     console.error('Login error:', err);
-    res.status(500).send('Server error');
+    res.status(500).json({ msg: 'Server Error' });
   }
 });
 
@@ -175,7 +175,7 @@ router.post('/google', async (req, res) => {
 
     // Create JWT token
     const payload = { id: user.id, role: user.role };
-    jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' }, (err, token) => {
+    jwt.sign(payload, JWT_SECRET, { expiresIn: '7d', algorithm: 'HS256' }, (err, token) => {
       if (err) throw err;
       res.json({
         token,
@@ -191,7 +191,7 @@ router.post('/google', async (req, res) => {
 
   } catch (err) {
     console.error('Google login error:', err);
-    res.status(500).send('Server error');
+    res.status(500).json({ msg: 'Server Error' });
   }
 });
 
@@ -204,7 +204,7 @@ router.get('/me', authMiddleware, async (req, res) => {
     res.json(user);
   } catch (err) {
     console.error('Get profile error:', err);
-    res.status(500).send('Server error');
+    res.status(500).json({ msg: 'Server Error' });
   }
 });
 

@@ -2,8 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import FloatingCTA from '@/components/FloatingCTA';
-import AiAssistant from '@/components/AiAssistant';
+import ClientShell from '@/components/ClientShell';
 
 export const metadata: Metadata = {
   title: 'Shivaay Nutrition | Premium Authentic Supplements Store Sonipat',
@@ -45,8 +44,7 @@ export default function RootLayout({
         </main>
 
         {/* Sticky floating widgets */}
-        <FloatingCTA />
-        <AiAssistant />
+        <ClientShell />
 
         {/* Universal Footer */}
         <Footer />
