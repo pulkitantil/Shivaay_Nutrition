@@ -20,9 +20,25 @@ app.use(compression());
 const PORT = process.env.PORT || 5000;
 
 // Enable CORS for specific frontend URL
-const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+// Enable CORS for specific frontend URLs (Local + Vercel + Custom Domains)
+const allowedOrigins = [
+  'http://localhost:3000',               // For your local development
+  'https://shivaay-front.vercel.app',    // Your Vercel subdomain
+  'https://www.shivaaynutrition.com',    // Your new custom WWW domain
+  'https://shivaaynutrition.com'         // Your new custom apex domain
+];
+
 app.use(cors({
-  origin: frontendUrl,
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, Postman, or curl)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Blocked by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
