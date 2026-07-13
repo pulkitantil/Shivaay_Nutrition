@@ -232,7 +232,7 @@ const seedLocalDB = async () => {
 
   // Seed Users (Default Admin)
   let users = readLocal('users');
-  const filteredUsers = users.filter(u => u.email !== 'shivaaynutrition190@gmail.com' || u.role === 'admin');
+  const filteredUsers = users.filter(u => u.email !== 'shivaaynutrition7@gmail.com' || u.role === 'admin');
   if (filteredUsers.length !== users.length) {
     writeLocal('users', filteredUsers);
     users = filteredUsers;
@@ -258,7 +258,7 @@ const seedLocalDB = async () => {
 const seedMongo = async () => {
   try {
     // Clear duplicate admin user if registered as customer previously
-    await User.deleteOne({ email: "shivaaynutrition190@gmail.com" });
+    await User.deleteOne({ email: "shivaaynutrition7@gmail.com" });
 
     const hasOldProducts = await Product.findOne({
       brand: { $in: ['Shivaay Nutrition', 'Creapure', 'Labrada', 'Cellucor'] }
