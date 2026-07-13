@@ -9,8 +9,15 @@ const { otpLimiter } = require('../middleware/rateLimiters');
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const getAdminEmails = () => {
-  const envEmail = process.env.ADMIN_EMAIL || 'shivaaynutrition7@gmail.com';
-  return envEmail.split(',').map(e => e.toLowerCase().trim());
+    console.log("==================================");
+    console.log("ADMIN_EMAIL ENV =", process.env.ADMIN_EMAIL);
+    console.log("==================================");
+
+    const envEmail = process.env.ADMIN_EMAIL || "shivaaynutrition7@gmail.com";
+
+    return envEmail
+        .split(",")
+        .map(e => e.toLowerCase().trim());
 };
 
 const isAdminEmail = (email) => {
