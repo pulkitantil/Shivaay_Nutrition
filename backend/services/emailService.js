@@ -1,14 +1,16 @@
-const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 /**
- * Sends a 6-digit OTP email to the admin.
- * Falls back to logging the OTP if SMTP fails.
+ * Sends a 6-digit OTP email using Resend.
+ *
+ * @param {string} toEmail
+ * @param {string} otp
+ * @returns {Promise<boolean>}
  */
 
 async function sendOTPEmail(toEmail, otp) {
-  const smtpUser = process.env.SMTP_USER;
-  const smtpPass = process.env.SMTP_PASS;
-
   console.log("\n============================================");
   console.log("🔐 SECURITY ALERT: GENERATED OTP FOR ADMIN");
   console.log("📧 Recipient:", toEmail);
@@ -16,44 +18,17 @@ async function sendOTPEmail(toEmail, otp) {
   console.log("🕒 Expires in: 10 minutes");
   console.log("============================================\n");
 
-  if (!smtpUser || !smtpPass) {
-    console.log("❌ SMTP credentials are missing.");
+  if (!process.env.RESEND_API_KEY) {
+    console.log("❌ RESEND_API_KEY is missing.");
     return false;
   }
 
   try {
-    const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 587,
-      secure: false,
-
-      auth: {
-        user: smtpUser,
-        pass: smtpPass,
-      },
-
-      connectionTimeout: 30000,
-      greetingTimeout: 30000,
-      socketTimeout: 30000,
-
-      tls: {
-        rejectUnauthorized: false,
-      },
-
-      logger: true,
-      debug: true,
-    });
-
-    console.log("🔄 Verifying SMTP connection...");
-
-    await transporter.verify();
-
-    console.log("✅ SMTP Connected Successfully.");
-
-    const info = await transporter.sendMail({
-      from: `"Shivaay Nutrition Security" <${smtpUser}>`,
-      to: toEmail,
+    const { data, error } = await resend.emails.send({
+      from: "Shivaay Nutrition <noreply@shivaaynutrition.com>",
+      to: [toEmail],
       subject: "Shivaay Nutrition Admin Panel — One-Time Password (OTP)",
+
       html: `
         <div style="font-family:Arial,sans-serif;padding:25px">
           <h2>Shivaay Nutrition</h2>
@@ -69,17 +44,17 @@ async function sendOTPEmail(toEmail, otp) {
       `,
     });
 
+    if (error) {
+      console.error("❌ Resend Error:", error);
+      return false;
+    }
+
     console.log("✅ OTP Email Sent Successfully");
-    console.log(info);
+    console.log(data);
 
     return true;
   } catch (err) {
-    console.log("================================");
-    console.log("❌ SMTP ERROR");
-    console.log(err);
-    console.log(err.stack);
-    console.log("================================");
-
+    console.error("❌ Resend Exception:", err);
     return false;
   }
 }
