@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { 
   Plus, 
   Edit2, 
@@ -27,12 +26,15 @@ type AdminTab = 'dashboard' | 'products' | 'orders';
 
 function AdminProductImage({ src, alt }: { src: string; alt: string }) {
   const [imgSrc, setImgSrc] = useState(src);
+
+  useEffect(() => {
+    setImgSrc(src);
+  }, [src]);
+
   return (
-    <Image
+    <img
       src={imgSrc}
       alt={alt}
-      width={36}
-      height={36}
       className="w-9 h-9 object-cover rounded-lg border border-brand-gold/10 shrink-0"
       onError={() => {
         setImgSrc('https://images.unsplash.com/photo-1593079831268-3381b0db4a77?q=80&w=600');

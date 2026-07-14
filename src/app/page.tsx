@@ -86,11 +86,6 @@ export default function Home() {
     authLoading,
   } = useStore();
 
-  useEffect(() => {
-    if (token && user?.role === 'admin') {
-      router.push('/admin');
-    }
-  }, [token, user, router]);
 
   const [myOrders, setMyOrders] = useState<Order[]>([]);
 

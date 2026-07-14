@@ -22,170 +22,7 @@ const paths = {
 };
 
 // Seed Data
-const DEFAULT_PRODUCTS = [
-  // --- Optimum Nutrition (ON) ---
-  {
-    name: 'ON Gold Standard 100% Whey (5 lbs)',
-    brand: 'Optimum Nutrition',
-    category: 'Whey Protein',
-    price: 7499,
-    status: 'In Stock',
-    image: 'https://images-na.ssl-images-amazon.com/images/P/B000QSNYGI.01._SCLZZZZZZZ_SX500_.jpg',
-    description: 'Gold Standard 100% Whey contains 24g of protein blend primarily consisting of whey protein isolate for lean muscle building.'
-  },
-  {
-    name: 'ON Serious Mass Gainer (6 lbs)',
-    brand: 'Optimum Nutrition',
-    category: 'Mass Gainers',
-    price: 3499,
-    status: 'In Stock',
-    image: 'https://images-na.ssl-images-amazon.com/images/P/B0B3DX8TKW.01._SCLZZZZZZZ_SX500_.jpg',
-    description: 'High-calorie mass gainer delivering 1,250 calories and 50g of protein per serving to support serious muscle gains.'
-  },
-  {
-    name: 'ON Micronized Creatine Powder (250g)',
-    brand: 'Optimum Nutrition',
-    category: 'Creatine',
-    price: 1099,
-    status: 'In Stock',
-    image: 'https://images.unsplash.com/photo-1593079831268-3381b0db4a77?q=80&w=600',
-    description: '100% pure micronized creatine monohydrate. Promotes muscle growth, increases strength, and improves athletic performance.'
-  },
-  {
-    name: 'ON Gold Standard Pre-Workout (30 servings)',
-    brand: 'Optimum Nutrition',
-    category: 'Pre Workout',
-    price: 2499,
-    status: 'Limited Stock',
-    image: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=600',
-    description: 'Unleashes explosive energy, focus, and supports enhanced endurance to help you crush your next training session.'
-  },
-
-  // --- One Science Nutrition (OSN) ---
-  {
-    name: 'OSN Premium Whey Protein (5 lbs)',
-    brand: 'One Science',
-    category: 'Whey Protein',
-    price: 5499,
-    status: 'In Stock',
-    image: 'https://images.unsplash.com/photo-1579758629938-03607ccdbaba?q=80&w=600',
-    description: 'Premium grass-fed whey protein formula designed to support muscle growth, repair, and overall strength enhancement.'
-  },
-  {
-    name: 'OSN Micronized Creatine (250g)',
-    brand: 'One Science',
-    category: 'Creatine',
-    price: 999,
-    status: 'In Stock',
-    image: 'https://images.unsplash.com/photo-1593079831268-3381b0db4a77?q=80&w=600',
-    description: 'Pure micronized creatine to replenish energy stores during high-intensity training, maximizing strength and power.'
-  },
-  {
-    name: 'OSN Ghost Pre-Workout (30 servings)',
-    brand: 'One Science',
-    category: 'Pre Workout',
-    price: 1899,
-    status: 'In Stock',
-    image: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=600',
-    description: 'Engineered with focus-enhancing ingredients, Beta-Alanine, and caffeine for explosive energy and muscle pump.'
-  },
-
-  // --- Kevin Levrone ---
-  {
-    name: 'Levro Whey Supreme (2kg)',
-    brand: 'Kevin Levrone',
-    category: 'Whey Protein',
-    price: 4999,
-    status: 'In Stock',
-    image: 'https://images.unsplash.com/photo-1579758629938-03607ccdbaba?q=80&w=600',
-    description: 'LevroWheySupreme is a delicious protein drink made of high-quality whey protein concentrate, supporting lean muscle mass.'
-  },
-  {
-    name: 'Levro Anabolic Mass Gainer (3kg)',
-    brand: 'Kevin Levrone',
-    category: 'Mass Gainers',
-    price: 3599,
-    status: 'Limited Stock',
-    image: 'https://images.unsplash.com/photo-1605296867304-46d5465a25f1?q=80&w=600',
-    description: 'Anabolic mass gainer formulated by IFBB Pro Kevin Levrone. High in protein, creatine, DAA, and test-boosters for extreme bulk.'
-  },
-  {
-    name: 'Levro Shaaboom Pump Pre-Workout (385g)',
-    brand: 'Kevin Levrone',
-    category: 'Pre Workout',
-    price: 2199,
-    status: 'In Stock',
-    image: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=600',
-    description: 'The ultimate pump formula with massive doses of Citrulline, Beta-Alanine, and caffeine for skin-splitting pumps.'
-  },
-
-  // --- Ronnie Coleman (RC) ---
-  {
-    name: 'RC Pro-Antium Whey Protein (5 lbs)',
-    brand: 'Ronnie Coleman',
-    category: 'Whey Protein',
-    price: 5999,
-    status: 'In Stock',
-    image: 'https://images.unsplash.com/photo-1579758629938-03607ccdbaba?q=80&w=600',
-    description: 'Pro-Antium is a multifaceted protein blend designed by 8x Mr. Olympia Ronnie Coleman. Packed with 30g protein per scoop.'
-  },
-  {
-    name: 'RC King Mass Gainer (6 lbs)',
-    brand: 'Ronnie Coleman',
-    category: 'Mass Gainers',
-    price: 3299,
-    status: 'In Stock',
-    image: 'https://images.unsplash.com/photo-1605296867304-46d5465a25f1?q=80&w=600',
-    description: 'King Mass helps you pack on clean calories with a massive 60g protein matrix and 180g carb blend per serving.'
-  },
-  {
-    name: 'RC Yeah Buddy Pre-Workout (30 servings)',
-    brand: 'Ronnie Coleman',
-    category: 'Pre Workout',
-    price: 1999,
-    status: 'In Stock',
-    image: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=600',
-    description: 'Yeah Buddy delivers focus, clean energy, and maximum athletic performance. Features Dynamine and TeaCrine.'
-  },
-  {
-    name: 'RC Creatine XS (250g)',
-    brand: 'Ronnie Coleman',
-    category: 'Creatine',
-    price: 1199,
-    status: 'In Stock',
-    image: 'https://images.unsplash.com/photo-1593079831268-3381b0db4a77?q=80&w=600',
-    description: 'Pure micronized creatine monohydrate to support ATP production, boosting lean muscle building and recovery.'
-  },
-
-  // --- Outlast Labs ---
-  {
-    name: 'Outlast Apocalypse Whey (4.4 lbs)',
-    brand: 'Outlast Labs',
-    category: 'Whey Protein',
-    price: 4799,
-    status: 'In Stock',
-    image: 'https://images.unsplash.com/photo-1579758629938-03607ccdbaba?q=80&w=600',
-    description: 'Ultra-filtered whey blend containing 25g protein, glutamine, and BCAAs for enhanced post-workout recovery.'
-  },
-  {
-    name: 'Outlast Trigger Pre-Workout (30 servings)',
-    brand: 'Outlast Labs',
-    category: 'Pre Workout',
-    price: 1699,
-    status: 'In Stock',
-    image: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=600',
-    description: 'Provides extreme mental focus, sharp cognitive drive, and explosive muscle pumps. Built for hardcore lifters.'
-  },
-  {
-    name: 'Outlast Micronized Creatine (250g)',
-    brand: 'Outlast Labs',
-    category: 'Creatine',
-    price: 999,
-    status: 'In Stock',
-    image: 'https://images.unsplash.com/photo-1593079831268-3381b0db4a77?q=80&w=600',
-    description: 'Micronized creatine monohydrate for superior absorption, promoting quick ATP replenishment and strength.'
-  }
-];
+const DEFAULT_PRODUCTS = [];
 
 // Default offers removed
 
@@ -221,11 +58,7 @@ const seedLocalDB = async () => {
   if (hasOldProducts) {
     console.log('Purging old legacy products from local JSON DB...');
     products = [];
-  }
-  if (products.length === 0) {
-    const seeded = DEFAULT_PRODUCTS.map((p, idx) => ({ ...p, id: `seed-prod-${idx + 1}` }));
-    writeLocal('products', seeded);
-    console.log('Seeded local products JSON database with genuine brands.');
+    writeLocal('products', []);
   }
 
   // Offers seeding removed
@@ -268,11 +101,7 @@ const seedMongo = async () => {
       await Product.deleteMany({});
     }
 
-    const productCount = await Product.countDocuments();
-    if (productCount === 0) {
-      await Product.insertMany(DEFAULT_PRODUCTS);
-      console.log('Seeded MongoDB products collection with genuine brands.');
-    }
+
     // Offers seeding removed
     const userCount = await User.countDocuments();
     if (userCount === 0) {

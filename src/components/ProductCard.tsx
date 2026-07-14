@@ -1,7 +1,6 @@
 'use client';
 
-import { useState } from 'react';
-import Image from 'next/image';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { MessageCircle } from 'lucide-react';
 
@@ -32,6 +31,10 @@ export default function ProductCard({
 }: ProductCardProps) {
   const [imgSrc, setImgSrc] = useState(product.image);
 
+  useEffect(() => {
+    setImgSrc(product.image);
+  }, [product.image]);
+
   return (
     <motion.div
       layout
@@ -42,11 +45,9 @@ export default function ProductCard({
     >
       {/* Img Box */}
       <div className="relative aspect-square w-full bg-brand-black overflow-hidden border-b border-brand-gold/10">
-        <Image
+        <img
           src={imgSrc}
           alt={product.name}
-          width={400}
-          height={400}
           className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
           onError={() => {
             setImgSrc('https://images.unsplash.com/photo-1593079831268-3381b0db4a77?q=80&w=600');
