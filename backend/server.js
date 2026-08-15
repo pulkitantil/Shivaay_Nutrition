@@ -52,8 +52,8 @@ const {
 } = require('./middleware/rateLimiters');
 
 // Express Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // Initialize DB (Mongoose MongoDB / Local JSON Fallback)
 initDB();

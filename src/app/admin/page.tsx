@@ -17,7 +17,8 @@ import {
   AlertTriangle,
   LogOut,
   Lock,
-  TrendingDown
+  TrendingDown,
+  Upload
 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { api } from '@/services/api';
@@ -79,6 +80,25 @@ export default function AdminPage() {
   const [prodStatus, setProdStatus] = useState<'In Stock' | 'Limited Stock' | 'Out of Stock'>('In Stock');
   const [prodImage, setProdImage] = useState('');
   const [prodDescription, setProdDescription] = useState('');
+  const [imageSourceType, setImageSourceType] = useState<'url' | 'upload'>('url');
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File is too large. Please select an image under 5MB.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      if (typeof reader.result === 'string') {
+        setProdImage(reader.result);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   // Offer Form States removed
 
@@ -196,6 +216,7 @@ export default function AdminPage() {
     setProdDescription('');
     setEditingProductId(null);
     setIsEditingProduct(false);
+    setImageSourceType('url');
   };
 
   const handleEditProductClick = (product: any) => {
@@ -208,6 +229,11 @@ export default function AdminPage() {
     setProdStatus(product.status);
     setProdImage(product.image);
     setProdDescription(product.description);
+    
+    // Automatically set view type based on if image is a base64 string
+    const isBase64 = product.image && product.image.startsWith('data:');
+    setImageSourceType(isBase64 ? 'upload' : 'url');
+    
     setIsEditingProduct(true);
   };
 
@@ -808,16 +834,78 @@ export default function AdminPage() {
                       </div>
                     </div>
 
-                    <div className="space-y-1">
-                      <label className="text-gray-400 font-bold uppercase">Product Image URL</label>
-                      <input
-                        type="url"
-                        required
-                        placeholder="https://images.unsplash.com/..."
-                        value={prodImage}
-                        onChange={(e) => setProdImage(e.target.value)}
-                        className="w-full bg-brand-black border border-brand-gold/10 focus:border-brand-orange rounded-lg p-2.5 text-white focus:outline-none"
-                      />
+                    <div className="space-y-3">
+                      <div className="space-y-1">
+                        <label className="text-gray-400 font-bold uppercase text-[10px]">Product Image Source</label>
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setImageSourceType('url')}
+                            className={`flex-1 py-2 text-[10px] font-bold rounded-lg border transition-all ${
+                              imageSourceType === 'url'
+                                ? 'bg-brand-orange/10 border-brand-orange text-brand-orange'
+                                : 'border-brand-gold/10 text-gray-400 bg-brand-black/50 hover:bg-brand-black'
+                            }`}
+                          >
+                            Image URL
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setImageSourceType('upload')}
+                            className={`flex-1 py-2 text-[10px] font-bold rounded-lg border transition-all ${
+                              imageSourceType === 'upload'
+                                ? 'bg-brand-orange/10 border-brand-orange text-brand-orange'
+                                : 'border-brand-gold/10 text-gray-400 bg-brand-black/50 hover:bg-brand-black'
+                            }`}
+                          >
+                            Upload File
+                          </button>
+                        </div>
+                      </div>
+
+                      {imageSourceType === 'url' ? (
+                        <div className="space-y-1">
+                          <label className="text-gray-400 font-bold uppercase text-[10px]">Product Image URL</label>
+                          <input
+                            type="url"
+                            required={!prodImage}
+                            placeholder="https://images.unsplash.com/..."
+                            value={prodImage.startsWith('data:') ? '' : prodImage}
+                            onChange={(e) => setProdImage(e.target.value)}
+                            className="w-full bg-brand-black border border-brand-gold/10 focus:border-brand-orange rounded-lg p-2.5 text-white focus:outline-none"
+                          />
+                        </div>
+                      ) : (
+                        <div className="space-y-1">
+                          <label className="text-gray-400 font-bold uppercase text-[10px]">Upload from Gallery</label>
+                          <div className="relative group border border-dashed border-brand-gold/20 hover:border-brand-orange/50 rounded-lg p-4 bg-brand-black/30 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              required={!prodImage}
+                              onChange={handleFileChange}
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                            />
+                            {prodImage.startsWith('data:') ? (
+                              <div className="flex flex-col items-center gap-2">
+                                <img
+                                  src={prodImage}
+                                  alt="Preview"
+                                  className="h-16 w-16 object-contain rounded-md border border-brand-gold/20"
+                                />
+                                <span className="text-[10px] text-brand-orange font-semibold">Change Image</span>
+                              </div>
+                            ) : (
+                              <>
+                                <Upload className="h-5 w-5 text-gray-500 group-hover:text-brand-orange transition-colors" />
+                                <span className="text-[10px] text-gray-400 group-hover:text-white transition-colors">
+                                  Click or drag & drop to upload image
+                                </span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     <div className="space-y-1">
